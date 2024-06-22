@@ -65,10 +65,10 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             return False
         return True
 
-    def update_concept_external_id(url, con_id, new_ext_id, con_names, current_ext_id):
+    def update_concept_external_id(url, con_id, new_external_id, con_names, current_ext_id):
         """Update the external ID of a concept."""
         data = {
-            "external_id": new_ext_id
+            "external_id": new_external_id
         }
         if not DRY_RUN:
             resp = requests.put(url, headers=HEADERS, data=json.dumps(data))
@@ -80,7 +80,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             'Name': ", ".join([name['name'] for name in con_names]),
             'URL': url,
             'Current External ID': current_ext_id,
-            'New External ID': new_ext_id
+            'New External ID': new_external_id
         })
 
     def get_all_concepts(url):
