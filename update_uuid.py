@@ -67,28 +67,28 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             return False
         return True
 
-    def update_concept_external_id(url, concept_details, ext_id):
+    def update_concept_external_id(url, concept_info, ext_id):
         """Update the external ID of a concept."""
         if not is_valid_36_char_uuid(ext_id):
             new_ext_id = generate_new_uuid()
             update_payload = json.dumps({"external_id": new_ext_id})
             if not DRY_RUN:
-                response = requests.put(url, headers=HEADERS, data=update_payload, timeout=10)
-                response.raise_for_status()
+                response_update = requests.put(url, headers=HEADERS, data=update_payload, timeout=10)
+                response_update.raise_for_status()
             else:
-                response = None
+                response_update = None
 
             # Write to CSV
             writer.writerow({
                 'Timestamp': datetime.now().isoformat(),
                 'Status': 'Updated',
                 'Valid External ID': ext_id,
-                'Concept ID': concept_details['id'],
-                'Name': concept_details['display_name'],
+                'Concept ID': concept_info['id'],
+                'Name': concept_info['display_name'],
                 'URL': url,
                 'Current External ID': ext_id,
                 'New External ID': new_ext_id,
-                'Original Response': response.text if response else '',
+                'Original Response': response_update.text if response_update else '',
                 'Update Payload': update_payload
             })
         else:
@@ -98,9 +98,9 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         """Retrieve all concepts from the given URL."""
         all_concepts = []
         while url:
-            response = requests.get(url, headers=HEADERS, timeout=10)
-            response.raise_for_status()
-            data = response.json()
+            response_get = requests.get(url, headers=HEADERS, timeout=10)
+            response_get.raise_for_status()
+            data = response_get.json()
             if isinstance(data, dict):
                 all_concepts.extend(data.get('results', []))
                 url = data.get('next')
@@ -115,30 +115,30 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
     # Get the list of concepts in the source
     concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/sources/{SOURCE_ID}/concepts/"
     concepts = get_all_concepts(concepts_url)
-    total_concepts = len(concepts)
-    processed_concepts_count = 0
+    TOTAL_CONCEPTS = len(concepts)
+    PROCESSED_CONCEPTS_COUNT = 0
     
     # Iterate over the concepts and update external IDs based on the conditions
     for concept in concepts:
         concept_url = f"{OCL_API_URL}{concept['url']}"
-        response = requests.get(concept_url, headers=HEADERS, timeout=10)
-        response.raise_for_status()
-        concept_details = response.json()
+        response_get = requests.get(concept_url, headers=HEADERS, timeout=10)
+        response_get.raise_for_status()
+        concept_info = response_get.json()
         concept_name = concept['display_name']
         external_id = concept.get('external_id', '')
-        update_concept_external_id(concept_url, concept_details, external_id)
+        update_concept_external_id(concept_url, concept_info, external_id)
 
         # Update progress
-        processed_concepts_count += 1
-        progress_percentage = (processed_concepts_count / total_concepts) * 100
+        PROCESSED_CONCEPTS_COUNT += 1
+        progress_percentage = (PROCESSED_CONCEPTS_COUNT / TOTAL_CONCEPTS) * 100
         print(
-            f"Progress: {processed_concepts_count}/{total_concepts} concepts verified "
+            f"Progress: {PROCESSED_CONCEPTS_COUNT}/{TOTAL_CONCEPTS} concepts verified "
             f"({progress_percentage:.2f}%) - Last concept: {concept_name} (ExtID: {external_id})"
         )
 
 # Print the results
 if DRY_RUN:
-    print("DRY RUN MODE: NO CHANGE were made to the OCL source.")
+    print("DRY RUN MODE: No changes will be made to the OCL source.")
 print(f"Number of concepts updated because they were empty: {COUNTERS['UPDATED_EMPTY']}")
 print(f"Number of concepts updated because they started with 'MSF-': {COUNTERS['UPDATED_MSF']}")
 print(f"Number of concepts updated because ID was <36 characters: {COUNTERS['UPDATED_INVALID']}")
