@@ -119,7 +119,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
     concepts = get_all_concepts(concepts_url)
     TOTAL_CONCEPTS = len(concepts)
     PROCESSED_CONCEPTS_COUNT = 0
-    
+
     # Iterate over the concepts and update external IDs based on the conditions
     for concept in concepts:
         concept_url = f"{OCL_API_URL}{concept['url']}"
