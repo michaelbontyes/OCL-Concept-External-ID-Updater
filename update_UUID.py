@@ -118,9 +118,9 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         if is_valid_36_char_uuid(external_id):
             COUNTERS['skipped'] += 1
         else:
-            new_external_id = generate_new_uuid()
+            NEW_EXTERNAL_ID = generate_new_uuid()
             update_concept_external_id(
-                concept_url, concept_id, new_external_id, concept_names, external_id
+                concept_url, concept_id, NEW_EXTERNAL_ID, concept_names, external_id
             )
 
 # Print the results
