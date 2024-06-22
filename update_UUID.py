@@ -27,21 +27,21 @@ ORG_ID = config['ORG_ID']
 DRY_RUN = args.dry_run
 
 # Counters for updated and skipped concepts
-updated_empty = 0
-updated_msf = 0
-updated_invalid = 0
-skipped = 0
+UPDATED_EMPTY = 0
+UPDATED_MSF = 0
+UPDATED_INVALID = 0
+SKIPPED = 0
 
 # Headers for the API request
-headers = {
+HEADERS = {
     "Authorization": f"Token {OCL_TOKEN}",
     "Content-Type": "application/json"
 }
 
 # Prepare CSV file for dry run mode
-csv_filename = 'updated_concepts_dry_run.csv' if DRY_RUN else 'updated_concepts.csv'
+CSV_FILENAME = 'updated_concepts_dry_run.csv' if DRY_RUN else 'updated_concepts.csv'
 
-with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
+with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
     fieldnames = ['Timestamp', 'ID', 'Name', 'URL', 'Current External ID', 'New External ID']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     writer.writeheader()
@@ -52,25 +52,25 @@ with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
 
     def is_valid_36_char_uuid(ext_id):
         """Check if the external ID is a valid 36-character UUID."""
-        global updated_empty, updated_msf, updated_invalid
+        global UPDATED_EMPTY, UPDATED_MSF, UPDATED_INVALID
         if ext_id is None or ext_id == '':
-            updated_empty += 1
+            UPDATED_EMPTY += 1
             return False
         if ext_id.startswith("MSF-"):
-            updated_msf += 1
+            UPDATED_MSF += 1
             return False
         if len(ext_id) != 36:
-            updated_invalid += 1
+            UPDATED_INVALID += 1
             return False
         return True
 
-    def update_concept_external_id(url, con_id, new_ext_id, con_names, current_ext_id):
+    def update_concept_external_id(url, con_id, new_external_id, con_names, current_ext_id):
         """Update the external ID of a concept."""
         data = {
-            "external_id": new_ext_id
+            "external_id": new_external_id
         }
         if not DRY_RUN:
-            resp = requests.put(url, headers=headers, data=json.dumps(data))
+            resp = requests.put(url, headers=HEADERS, data=json.dumps(data))
             resp.raise_for_status()
         timestamp = datetime.now().isoformat()
         writer.writerow({
@@ -79,14 +79,14 @@ with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
             'Name': ", ".join([name['name'] for name in con_names]),
             'URL': url,
             'Current External ID': current_ext_id,
-            'New External ID': new_ext_id
+            'New External ID': new_external_id
         })
 
     def get_all_concepts(url):
         """Get all concepts with pagination."""
         all_concepts = []
         while url:
-            resp = requests.get(url, headers=headers)
+            resp = requests.get(url, headers=HEADERS)
             resp.raise_for_status()
             data = resp.json()
             if isinstance(data, dict):
@@ -109,23 +109,24 @@ with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
         concept_url = f"{OCL_API_URL}{concept['url']}"
         concept_id = concept['id']
         external_id = concept.get('external_id', '')
-        response = requests.get(concept_url, headers=headers)
+        response = requests.get(concept_url, headers=HEADERS)
         response.raise_for_status()
         concept_details = response.json()
         concept_names = concept_details.get('names', [])
 
         if is_valid_36_char_uuid(external_id):
-            skipped += 1
+            SKIPPED += 1
         else:
-            new_ext_id = generate_new_uuid()
+            new_external_id = generate_new_uuid()
             update_concept_external_id(
-                concept_url, concept_id, new_ext_id, concept_names, external_id
+                concept_url, concept_id, new_external_id, concept_names, external_id
             )
 
 # Print the results
 if DRY_RUN:
     print("DRY RUN MODE: No changes will be made to the OCL source.")
-print(f"Number of concepts updated because they were empty: {updated_empty}")
-print(f"Number of concepts updated because they started with 'MSF-': {updated_msf}")
-print(f"Number of concepts updated because current ID was less than 36 characters: {updated_invalid}")
-print(f"Number of concepts skipped: {skipped}\n")
+print(f"Number of concepts updated because they were empty: {UPDATED_EMPTY}")
+print(f"Number of concepts updated because they started with 'MSF-': {UPDATED_MSF}")
+print(f"Number of concepts updated because current ID was less than 36 characters: {UPDATED_INVALID}")
+print(f"Number of concepts skipped: {SKIPPED}")
+print()
