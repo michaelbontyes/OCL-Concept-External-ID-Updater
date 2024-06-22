@@ -49,8 +49,8 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         """Generate a new UUID (16 characters)."""
         return str(uuid.uuid4())[:36]
 
-# Check if the external ID is a valid 36-character UUID.
     def is_valid_36_char_uuid(ext_id):
+        """Check if the external ID is a valid 36-character UUID."""
         if ext_id is None or ext_id == '':
             COUNTERS['updated_empty'] += 1
             return False
@@ -62,8 +62,8 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             return False
         return True
 
-    # Update the external ID of a concept.
     def update_concept_external_id(url, concept_id, concept_name, concept_names, current_ext_id, original_response):
+        """Update the external ID of a concept."""
         valid_uuid = is_valid_36_char_uuid(current_ext_id)
         changed_uuid = False
         if valid_uuid:
@@ -93,28 +93,37 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             'Update Payload': json.dumps(data) if not DRY_RUN and changed_uuid else '{}'
         })
 
-    # Get all concepts with pagination.
     def get_all_concepts(url):
+        """Get all concepts with pagination."""
         all_concepts = []
+        total_concepts = 0
+        processed_concepts = 0
+
         while url:
             resp = requests.get(url, headers=HEADERS, timeout=10)
             resp.raise_for_status()
             data = resp.json()
+
             if isinstance(data, dict):
+                total_concepts += len(data.get('results', []))
                 all_concepts.extend(data.get('results', []))
                 url = data.get('next')
             elif isinstance(data, list):
+                total_concepts += len(data)
                 all_concepts.extend(data)
                 break
             else:
                 print("Unexpected response format:", data)
                 break
+
         return all_concepts
 
     # Get the list of concepts in the source
     concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/sources/{SOURCE_ID}/concepts/"
     concepts = get_all_concepts(concepts_url)
-
+    total_concepts = len(concepts)
+    processed_concepts = 0
+    
     # Iterate over the concepts and update external IDs based on the conditions
     for concept in concepts:
         concept_url = f"{OCL_API_URL}{concept['url']}"
@@ -129,6 +138,12 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             concept_url, concept_id, concept_name, concept_names, external_id, concept_details
         )
 
+        # Update progress
+        processed_concepts += 1
+        progress_percentage = (processed_concepts / total_concepts) * 100
+        print(f"Progress: {processed_concepts}/{total_concepts} concepts verified ({progress_percentage:.2f}%) - Last concept: {concept_name} (ExtID: {external_id})")
+
+
 # Print the results
 if DRY_RUN:
     print("DRY RUN MODE: No changes will be made to the OCL source.")
@@ -136,4 +151,3 @@ print(f"Number of concepts updated because they were empty: {COUNTERS['updated_e
 print(f"Number of concepts updated because they started with 'MSF-': {COUNTERS['updated_msf']}")
 print(f"Number of concepts updated because ID was <36 characters: {COUNTERS['updated_invalid']}")
 print(f"Number of concepts skipped: {COUNTERS['skipped']}")
-print()
