@@ -4,7 +4,7 @@ This script updates the external IDs of concepts in a given Open Concept Lab (OC
 
 It uses the [OCL API](https://docs.openconceptlab.org/en/latest/oclapi/apireference/concepts.html#edit-concept) to pull the details of each concept in the configured OCL source, check the external ID of each concept, and update it if necessary. 
 
-Use the 
+[Here is an explanation video](https://www.loom.com/share/84919d2820434ae78e7be7827a607d5d?sid=b4ec5467-d560-467f-9d3a-5cbc3a324ccb)
 
 ### Conditions for Updating External IDs with a new UUID
 1. If the external ID is **empty**
@@ -60,10 +60,14 @@ The script creates two CSV files:
 The CSV file will have the following columns:
 
 - ID: The ID of the concept.
+- Status: If the concept was updated or not by the script.
+- Valid External ID: If the external UUID is a 36-characters UUID.
 - Name: The name of the concept.
 - URL: The URL of the concept.
 - Current External ID: The current external ID of the concept.
 - New External ID: The new external ID generated for the concept.
+- Original Response: A Json backup of the concept before the update.
+- Update Payload: A Json that details what was sent back to the OCL API (ID, External ID, Names)
 
 ## Additional Information
 - The script uses pagination to retrieve all concepts from the specified OCL source.
