@@ -71,7 +71,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             "external_id": new_external_id
         }
         if not DRY_RUN:
-            resp = requests.put(url, headers=HEADERS, data=json.dumps(data))
+            resp = requests.put(url, headers=HEADERS, data=json.dumps(data), timeout=10)
             resp.raise_for_status()
         timestamp = datetime.now().isoformat()
         writer.writerow({
@@ -87,7 +87,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         """Get all concepts with pagination."""
         all_concepts = []
         while url:
-            resp = requests.get(url, headers=HEADERS)
+            resp = requests.get(url, headers=HEADERS, timeout=10)
             resp.raise_for_status()
             data = resp.json()
             if isinstance(data, dict):
@@ -110,7 +110,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         concept_url = f"{OCL_API_URL}{concept['url']}"
         concept_id = concept['id']
         external_id = concept.get('external_id', '')
-        response = requests.get(concept_url, headers=HEADERS)
+        response = requests.get(concept_url, headers=HEADERS, timeout=10)
         response.raise_for_status()
         concept_details = response.json()
         concept_names = concept_details.get('names', [])
@@ -128,6 +128,6 @@ if DRY_RUN:
     print("DRY RUN MODE: No changes will be made to the OCL source.")
 print(f"Number of concepts updated because they were empty: {COUNTERS['updated_empty']}")
 print(f"Number of concepts updated because they started with 'MSF-': {COUNTERS['updated_msf']}")
-print(f"Number of concepts updated because current ID was less than 36 characters: {COUNTERS['updated_invalid']}")
+print(f"Number of concepts updated because ID was <36 characters: {COUNTERS['updated_invalid']}")
 print(f"Number of concepts skipped: {COUNTERS['skipped']}")
 print()
