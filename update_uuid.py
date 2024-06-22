@@ -65,36 +65,37 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         if len(ext_id) != 36:
             COUNTERS['UPDATED_INVALID'] += 1
             return False
+        COUNTERS['SKIPPED'] += 1
         return True
-
-    def update_concept_external_id(url, concept_details, ext_id):
+    def update_concept_external_id(url, id_param, name, ext_id, original_resp):
         """Update the external ID of a concept."""
-        if not is_valid_36_char_uuid(ext_id):
-            new_ext_id = generate_new_uuid()
-            update_payload = json.dumps({"external_id": new_ext_id})
-            if not DRY_RUN:
-                response_update = requests.put(
-                    url, headers=HEADERS, data=update_payload, timeout=10
-                )
-                response_update.raise_for_status()
-            else:
-                response_update = None
-
-            # Write to CSV
-            writer.writerow({
-                'Timestamp': datetime.now().isoformat(),
-                'Status': 'Updated',
-                'Valid External ID': ext_id,
-                'Concept ID': concept_details['id'],
-                'Name': concept_details['display_name'],
-                'URL': url,
-                'Current External ID': ext_id,
-                'New External ID': new_ext_id,
-                'Original Response': response_update.text if response_update else '',
-                'Update Payload': update_payload
-            })
-        else:
-            COUNTERS['SKIPPED'] += 1
+        valid_uuid = is_valid_36_char_uuid(ext_id)
+        changed_uuid = False
+        concept_names = concept_details.get('names', [])
+        if not DRY_RUN and not valid_uuid:
+            new_external_id = generate_new_uuid()
+            data = {
+                "id": id_param,
+                "external_id": new_external_id,
+                "names": concept_names
+            }
+            resp = requests.put(url, headers=HEADERS, data=json.dumps(data), timeout=10)
+            resp.raise_for_status()
+            changed_uuid = True
+            valid_uuid = True
+        timestamp = datetime.now().isoformat()
+        writer.writerow({
+            'Timestamp': timestamp,
+            'Status': 'New ID' if not DRY_RUN and changed_uuid else 'No Change',
+            'Valid External ID': 'Yes' if valid_uuid else 'No',
+            'Concept ID': id_param,
+            'Name': name,
+            'URL': url,
+            'Current External ID': ext_id,
+            'New External ID': new_external_id if not DRY_RUN and changed_uuid else '{}',
+            'Original Response': original_resp,
+            'Update Payload': json.dumps(data) if not DRY_RUN and changed_uuid else '{}'
+        })
 
     def get_all_concepts(url):
         """Retrieve all concepts from the given URL."""
@@ -123,12 +124,15 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
     # Iterate over the concepts and update external IDs based on the conditions
     for concept in concepts:
         concept_url = f"{OCL_API_URL}{concept['url']}"
-        response_detail = requests.get(concept_url, headers=HEADERS, timeout=10)
-        response_detail.raise_for_status()
-        concept_info = response_detail.json()
-        concept_name = concept['display_name']
+        concept_id = concept['id']
         external_id = concept.get('external_id', '')
-        update_concept_external_id(concept_url, concept_info, external_id)
+        response = requests.get(concept_url, headers=HEADERS, timeout=10)
+        response.raise_for_status()
+        concept_details = response.json()
+        concept_name = concept['display_name']
+        update_concept_external_id(
+            concept_url, concept_id, concept_name, external_id, concept_details
+        )
 
         # Update progress
         PROCESSED_CONCEPTS_COUNT += 1
