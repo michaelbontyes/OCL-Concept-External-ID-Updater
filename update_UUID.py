@@ -50,45 +50,45 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         """Generate a new UUID (16 characters)."""
         return str(uuid.uuid4())[:36]
 
-    def is_valid_36_char_uuid(external_id):
+    def is_valid_36_char_uuid(ext_id):
         """Check if the external ID is a valid 36-character UUID."""
         global UPDATED_EMPTY, UPDATED_MSF, UPDATED_INVALID
-        if external_id is None or external_id == '':
+        if ext_id is None or ext_id == '':
             UPDATED_EMPTY += 1
             return False
-        if external_id.startswith("MSF-"):
+        if ext_id.startswith("MSF-"):
             UPDATED_MSF += 1
             return False
-        if len(external_id) != 36:
+        if len(ext_id) != 36:
             UPDATED_INVALID += 1
             return False
         return True
 
-    def update_concept_external_id(url, concept_id, new_external_id, concept_names, current_external_id):
+    def update_concept_external_id(url, con_id, new_ext_id, con_names, current_ext_id):
         """Update the external ID of a concept."""
         data = {
-            "external_id": new_external_id
+            "external_id": new_ext_id
         }
         if not DRY_RUN:
-            response = requests.put(url, headers=headers, data=json.dumps(data))
-            response.raise_for_status()
+            resp = requests.put(url, headers=headers, data=json.dumps(data))
+            resp.raise_for_status()
         timestamp = datetime.now().isoformat()
         writer.writerow({
             'Timestamp': timestamp,
-            'ID': concept_id,
-            'Name': ", ".join([name['name'] for name in concept_names]),
+            'ID': con_id,
+            'Name': ", ".join([name['name'] for name in con_names]),
             'URL': url,
-            'Current External ID': current_external_id,
-            'New External ID': new_external_id
+            'Current External ID': current_ext_id,
+            'New External ID': new_ext_id
         })
 
     def get_all_concepts(url):
         """Get all concepts with pagination."""
         all_concepts = []
         while url:
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            data = response.json()
+            resp = requests.get(url, headers=headers)
+            resp.raise_for_status()
+            data = resp.json()
             if isinstance(data, dict):
                 all_concepts.extend(data.get('results', []))
                 url = data.get('next')
@@ -117,8 +117,10 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         if is_valid_36_char_uuid(external_id):
             SKIPPED += 1
         else:
-            new_ext_id = generate_new_uuid()
-            update_concept_external_id(concept_url, concept_id, new_ext_id, concept_names, external_id)
+            new_external_id = generate_new_uuid()
+            update_concept_external_id(
+                concept_url, concept_id, new_external_id, concept_names, external_id
+            )
 
 # Print the results
 if DRY_RUN:
@@ -126,4 +128,4 @@ if DRY_RUN:
 print(f"Number of concepts updated because they were empty: {UPDATED_EMPTY}")
 print(f"Number of concepts updated because they started with 'MSF-': {UPDATED_MSF}")
 print(f"Number of concepts updated because current ID was less than 36 characters: {UPDATED_INVALID}")
-print(f"Number of concepts skipped: {SKIPPED}\n")
+print(f"Number of concepts skipped: {SKIPPED}")
