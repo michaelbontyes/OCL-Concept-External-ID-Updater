@@ -23,7 +23,7 @@ jobs:
 
     - name: Clear pylint cache
       run: |
-        pylint --clear-cache
+        rm -rf ~/.pylint.d
 
     - name: Run pylint
       run: |
