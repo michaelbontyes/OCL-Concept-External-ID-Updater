@@ -67,13 +67,15 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             return False
         return True
 
-    def update_concept_external_id(url, concept_info, ext_id):
+    def update_concept_external_id(url, concept_details, ext_id):
         """Update the external ID of a concept."""
         if not is_valid_36_char_uuid(ext_id):
             new_ext_id = generate_new_uuid()
             update_payload = json.dumps({"external_id": new_ext_id})
             if not DRY_RUN:
-                response_update = requests.put(url, headers=HEADERS, data=update_payload, timeout=10)
+                response_update = requests.put(
+                    url, headers=HEADERS, data=update_payload, timeout=10
+                )
                 response_update.raise_for_status()
             else:
                 response_update = None
@@ -83,8 +85,8 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
                 'Timestamp': datetime.now().isoformat(),
                 'Status': 'Updated',
                 'Valid External ID': ext_id,
-                'Concept ID': concept_info['id'],
-                'Name': concept_info['display_name'],
+                'Concept ID': concept_details['id'],
+                'Name': concept_details['display_name'],
                 'URL': url,
                 'Current External ID': ext_id,
                 'New External ID': new_ext_id,
@@ -98,9 +100,9 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         """Retrieve all concepts from the given URL."""
         all_concepts = []
         while url:
-            response_get = requests.get(url, headers=HEADERS, timeout=10)
-            response_get.raise_for_status()
-            data = response_get.json()
+            response = requests.get(url, headers=HEADERS, timeout=10)
+            response.raise_for_status()
+            data = response.json()
             if isinstance(data, dict):
                 all_concepts.extend(data.get('results', []))
                 url = data.get('next')
@@ -121,9 +123,9 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
     # Iterate over the concepts and update external IDs based on the conditions
     for concept in concepts:
         concept_url = f"{OCL_API_URL}{concept['url']}"
-        response_get = requests.get(concept_url, headers=HEADERS, timeout=10)
-        response_get.raise_for_status()
-        concept_info = response_get.json()
+        response = requests.get(concept_url, headers=HEADERS, timeout=10)
+        response.raise_for_status()
+        concept_info = response.json()
         concept_name = concept['display_name']
         external_id = concept.get('external_id', '')
         update_concept_external_id(concept_url, concept_info, external_id)
