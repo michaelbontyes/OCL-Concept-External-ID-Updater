@@ -27,7 +27,7 @@ ORG_ID = config['ORG_ID']
 DRY_RUN = args.dry_run
 
 # Counters for updated and skipped concepts
-counters = {
+COUNTERS = {
     'updated_empty': 0,
     'updated_msf': 0,
     'updated_invalid': 0,
@@ -52,16 +52,16 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         """Generate a new UUID (16 characters)."""
         return str(uuid.uuid4())[:36]
 
-    def is_valid_36_char_uuid(ext_id, counters):
+    def is_valid_36_char_uuid(ext_id):
         """Check if the external ID is a valid 36-character UUID."""
         if ext_id is None or ext_id == '':
-            counters['updated_empty'] += 1
+            COUNTERS['updated_empty'] += 1
             return False
         if ext_id.startswith("MSF-"):
-            counters['updated_msf'] += 1
+            COUNTERS['updated_msf'] += 1
             return False
         if len(ext_id) != 36:
-            counters['updated_invalid'] += 1
+            COUNTERS['updated_invalid'] += 1
             return False
         return True
 
@@ -115,19 +115,19 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         concept_details = response.json()
         concept_names = concept_details.get('names', [])
 
-        if is_valid_36_char_uuid(external_id, counters):
-            counters['skipped'] += 1
+        if is_valid_36_char_uuid(external_id):
+            COUNTERS['skipped'] += 1
         else:
-            NEW_EXTERNAL_ID = generate_new_uuid()
+            new_external_id = generate_new_uuid()
             update_concept_external_id(
-                concept_url, concept_id, NEW_EXTERNAL_ID, concept_names, external_id
+                concept_url, concept_id, new_external_id, concept_names, external_id
             )
 
 # Print the results
 if DRY_RUN:
     print("DRY RUN MODE: No changes will be made to the OCL source.")
-print(f"Number of concepts updated because they were empty: {counters['updated_empty']}")
-print(f"Number of concepts updated because they started with 'MSF-': {counters['updated_msf']}")
-print(f"Number of concepts updated because current ID was less than 36 characters: {counters['updated_invalid']}")
-print(f"Number of concepts skipped: {counters['skipped']}")
+print(f"Number of concepts updated because they were empty: {COUNTERS['updated_empty']}")
+print(f"Number of concepts updated because they started with 'MSF-': {COUNTERS['updated_msf']}")
+print(f"Number of concepts updated because current ID was less than 36 characters: {COUNTERS['updated_invalid']}")
+print(f"Number of concepts skipped: {COUNTERS['skipped']}")
 print()
