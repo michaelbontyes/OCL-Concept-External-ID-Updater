@@ -1,4 +1,4 @@
 Timestamp,ID,Name,URL,Current External ID,New External ID
-2024-06-21 15:48:44,5624119,Spinal headache,https://api.openconceptlab.org//orgs/MSFOCG/sources/UUIDTest/concepts/5624119/,5675e86b-1328-404c-9f79,239ca731-3ceb-4a1a-9792-5dc2f14d62f7
-2024-06-21 15:48:45,5624187,Examen dentaire,https://api.openconceptlab.org//orgs/MSFOCG/sources/UUIDTest/concepts/5624187/,MSF-AAAAAA000000000023003237,e36584d1-5793-44b8-894f-14fc0ac3710a
-2024-06-21 15:48:45,5624185,Antipsychotique,https://api.openconceptlab.org//orgs/MSFOCG/sources/UUIDTest/concepts/5624185/,,82a26c63-af13-4b8e-a97c-14dd05c91b40
+2024-06-22T10:45:38.375423,5624119,"Spinal headache, Céphalée post brèche",https://api.openconceptlab.org//orgs/MSFOCG/sources/UUIDTest/concepts/5624119/,5675e86b-1328-404c-9f79,aabc16c9-dfb1-4640-842d-1b5561f28120
+2024-06-22T10:45:38.636388,5624187,"Examen dentaire, Dental examination",https://api.openconceptlab.org//orgs/MSFOCG/sources/UUIDTest/concepts/5624187/,MSF-AAAAAA000000000023003237,d667cdc7-40c1-4d97-a6f0-627d1fb13766
+2024-06-22T10:45:38.894142,5624185,"Antipsychotique, Neuroleptics, Antipsychotic, AP",https://api.openconceptlab.org//orgs/MSFOCG/sources/UUIDTest/concepts/5624185/,,a735c4cb-094b-4d40-bbf8-136497d7e1e6

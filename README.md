@@ -2,10 +2,10 @@
 
 This script updates the external IDs of concepts in a given Open Concept Lab (OCL) source. It checks each concept's external ID against certain conditions and updates it if necessary. The updated external IDs are written to a CSV file.
 
-### Conditions for Updating External IDs
-1. If the external ID is **empty**, it will be skipped and not updated.
-2. If the external ID starts with **"MSF-"**, it will be skipped and not updated.
-3. If the external ID is **not a valid 36-character UUID**, it will be updated with a new 36-character UUID.
+### Conditions for Updating External IDs with a new UUID
+1. If the external ID is **empty**
+2. If the external ID starts with **"MSF-"**
+3. If the external ID is **not a valid 36-character UUID**
 
 ## Prerequisites
 
