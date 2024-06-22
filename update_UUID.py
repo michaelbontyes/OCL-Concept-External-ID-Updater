@@ -27,10 +27,10 @@ ORG_ID = config['ORG_ID']
 DRY_RUN = args.dry_run
 
 # Counters for updated and skipped concepts
-UPDATED_EMPTY = 0
-UPDATED_MSF = 0
-UPDATED_INVALID = 0
-SKIPPED = 0
+updated_empty = 0
+updated_msf = 0
+updated_invalid = 0
+skipped = 0
 
 # Headers for the API request
 headers = {
@@ -39,9 +39,9 @@ headers = {
 }
 
 # Prepare CSV file for dry run mode
-CSV_FILENAME = 'updated_concepts_dry_run.csv' if DRY_RUN else 'updated_concepts.csv'
+csv_filename = 'updated_concepts_dry_run.csv' if DRY_RUN else 'updated_concepts.csv'
 
-with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
+with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
     fieldnames = ['Timestamp', 'ID', 'Name', 'URL', 'Current External ID', 'New External ID']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     writer.writeheader()
@@ -52,15 +52,15 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
 
     def is_valid_36_char_uuid(ext_id):
         """Check if the external ID is a valid 36-character UUID."""
-        nonlocal UPDATED_EMPTY, UPDATED_MSF, UPDATED_INVALID
+        global updated_empty, updated_msf, updated_invalid
         if ext_id is None or ext_id == '':
-            UPDATED_EMPTY += 1
+            updated_empty += 1
             return False
         if ext_id.startswith("MSF-"):
-            UPDATED_MSF += 1
+            updated_msf += 1
             return False
         if len(ext_id) != 36:
-            UPDATED_INVALID += 1
+            updated_invalid += 1
             return False
         return True
 
@@ -115,7 +115,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         concept_names = concept_details.get('names', [])
 
         if is_valid_36_char_uuid(external_id):
-            SKIPPED += 1
+            skipped += 1
         else:
             new_ext_id = generate_new_uuid()
             update_concept_external_id(
@@ -125,7 +125,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
 # Print the results
 if DRY_RUN:
     print("DRY RUN MODE: No changes will be made to the OCL source.")
-print(f"Number of concepts updated because they were empty: {UPDATED_EMPTY}")
-print(f"Number of concepts updated because they started with 'MSF-': {UPDATED_MSF}")
-print(f"Number of concepts updated because current ID was less than 36 characters: {UPDATED_INVALID}")
-print(f"Number of concepts skipped: {SKIPPED}\n")
+print(f"Number of concepts updated because they were empty: {updated_empty}")
+print(f"Number of concepts updated because they started with 'MSF-': {updated_msf}")
+print(f"Number of concepts updated because current ID was less than 36 characters: {updated_invalid}")
+print(f"Number of concepts skipped: {skipped}\n")
