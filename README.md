@@ -4,7 +4,9 @@ This script updates the external IDs of concepts in a given Open Concept Lab (OC
 
 It uses the [OCL API](https://docs.openconceptlab.org/en/latest/oclapi/apireference/concepts.html#edit-concept) to pull the details of each concept in the configured OCL source, check the external ID of each concept, and update it if necessary. 
 
-[Here is an explanation video](https://www.loom.com/share/84919d2820434ae78e7be7827a607d5d?sid=b4ec5467-d560-467f-9d3a-5cbc3a324ccb)
+[Here is an explanation video](https://www.loom.com/share/84919d2820434ae78e7be7827a607d5d?sid=b4ec5467-d560-467f-9d3a-5cbc3a324ccb)  
+
+<img width="400" alt="Screenshot 2024-06-22 at 7 52 34 PM" src="https://github.com/michaelbontyes/OCL-Concept-External-ID-Updater/assets/9321036/c35a15e1-7b74-4ea3-aa79-a8ffd45f7749">
 
 ### Conditions for Updating External IDs with a new UUID
 1. If the external ID is **empty**
