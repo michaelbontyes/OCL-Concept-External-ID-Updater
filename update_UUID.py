@@ -39,9 +39,9 @@ headers = {
 }
 
 # Prepare CSV file for dry run mode
-csv_filename = 'updated_concepts_dry_run.csv' if DRY_RUN else 'updated_concepts.csv'
+CSV_FILENAME = 'updated_concepts_dry_run.csv' if DRY_RUN else 'updated_concepts.csv'
 
-with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
+with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
     fieldnames = ['Timestamp', 'ID', 'Name', 'URL', 'Current External ID', 'New External ID']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     writer.writeheader()
@@ -64,22 +64,21 @@ with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
             return False
         return True
 
-    def update_concept_external_id(concept_url, concept_id, new_external_id, concept_names):
+    def update_concept_external_id(url, concept_id, new_external_id, concept_names, current_external_id):
         """Update the external ID of a concept."""
-        global SKIPPED
         data = {
             "external_id": new_external_id
         }
         if not DRY_RUN:
-            response = requests.put(concept_url, headers=headers, data=json.dumps(data))
+            response = requests.put(url, headers=headers, data=json.dumps(data))
             response.raise_for_status()
         timestamp = datetime.now().isoformat()
         writer.writerow({
             'Timestamp': timestamp,
             'ID': concept_id,
             'Name': ", ".join([name['name'] for name in concept_names]),
-            'URL': concept_url,
-            'Current External ID': external_id,
+            'URL': url,
+            'Current External ID': current_external_id,
             'New External ID': new_external_id
         })
 
@@ -118,8 +117,8 @@ with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
         if is_valid_36_char_uuid(external_id):
             SKIPPED += 1
         else:
-            new_external_id = generate_new_uuid()
-            update_concept_external_id(concept_url, concept_id, new_external_id, concept_names)
+            new_ext_id = generate_new_uuid()
+            update_concept_external_id(concept_url, concept_id, new_ext_id, concept_names, external_id)
 
 # Print the results
 if DRY_RUN:
@@ -127,4 +126,4 @@ if DRY_RUN:
 print(f"Number of concepts updated because they were empty: {UPDATED_EMPTY}")
 print(f"Number of concepts updated because they started with 'MSF-': {UPDATED_MSF}")
 print(f"Number of concepts updated because current ID was less than 36 characters: {UPDATED_INVALID}")
-print(f"Number of concepts skipped: {SKIPPED}")
+print(f"Number of concepts skipped: {SKIPPED}\n")
