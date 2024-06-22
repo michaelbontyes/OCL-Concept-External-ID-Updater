@@ -2,6 +2,10 @@
 
 This script updates the external IDs of concepts in a given Open Concept Lab (OCL) source. It checks each concept's external ID against certain conditions and updates it if necessary. The updated external IDs are written to a CSV file.
 
+It uses the [OCL API](https://docs.openconceptlab.org/en/latest/oclapi/apireference/concepts.html#edit-concept) to pull the details of each concept in the configured OCL source, check the external ID of each concept, and update it if necessary. 
+
+Use the 
+
 ### Conditions for Updating External IDs with a new UUID
 1. If the external ID is **empty**
 2. If the external ID starts with **"MSF-"**
@@ -36,13 +40,13 @@ This script updates the external IDs of concepts in a given Open Concept Lab (OC
 3. Save the config.json file.
 
 ## Usage
-1. Run the script: **python update_UUID.py**
+Run the script: `python update_UUID.py`
 
 The script will update the external IDs of concepts in the specified OCL source and write the updated concepts to a CSV file named updated_concepts.csv and updated_concepts_dry_run.csv in Dry Run Mode.
 
-## Dry Run Mode
+## Dry Run / Test Mode
 To run the script in dry run mode, add the --dry-run flag when executing the script:
-1. Run the script: python update_UUID.py **--dry-run**
+Run the script: `python update_UUID.py --dry-run`
 
 ## CSV Files
 The script creates two CSV files:

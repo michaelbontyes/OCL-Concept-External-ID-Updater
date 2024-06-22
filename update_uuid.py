@@ -1,7 +1,4 @@
-"""
-This script updates the UUIDs of concepts in the OCL source.
-"""
-
+# This script updates the UUIDs of concepts in an OCL source.
 import argparse
 import uuid
 import json
@@ -44,7 +41,7 @@ HEADERS = {
 CSV_FILENAME = 'updated_concepts_dry_run.csv' if DRY_RUN else 'updated_concepts.csv'
 
 with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
-    fieldnames = ['Timestamp', 'ID', 'Name', 'URL', 'Current External ID', 'New External ID']
+    fieldnames = ['Timestamp', 'Status', 'Valid External ID', 'Concept ID', 'Name', 'URL', 'Current External ID', 'New External ID', 'Original Response', 'Update Payload']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     writer.writeheader()
 
@@ -52,8 +49,8 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         """Generate a new UUID (16 characters)."""
         return str(uuid.uuid4())[:36]
 
+# Check if the external ID is a valid 36-character UUID.
     def is_valid_36_char_uuid(ext_id):
-        """Check if the external ID is a valid 36-character UUID."""
         if ext_id is None or ext_id == '':
             COUNTERS['updated_empty'] += 1
             return False
@@ -65,26 +62,39 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             return False
         return True
 
-    def update_concept_external_id(url, con_id, new_external_id, con_names, current_ext_id):
-        """Update the external ID of a concept."""
-        data = {
-            "external_id": new_external_id
-        }
-        if not DRY_RUN:
+    # Update the external ID of a concept.
+    def update_concept_external_id(url, concept_id, concept_name, concept_names, current_ext_id, original_response):
+        valid_uuid = is_valid_36_char_uuid(current_ext_id)
+        changed_uuid = False
+        if valid_uuid:
+            COUNTERS['skipped'] += 1
+        elif not DRY_RUN and not valid_uuid:
+            new_external_id = generate_new_uuid()
+            data = {
+                "id": concept_id,
+                "external_id": new_external_id,
+                "names": concept_names
+            }
             resp = requests.put(url, headers=HEADERS, data=json.dumps(data), timeout=10)
             resp.raise_for_status()
+            changed_uuid = True
+            valid_uuid = True
         timestamp = datetime.now().isoformat()
         writer.writerow({
             'Timestamp': timestamp,
-            'ID': con_id,
-            'Name': ", ".join([name['name'] for name in con_names]),
+            'Status': 'New ID' if not DRY_RUN and changed_uuid else 'No Change',
+            'Valid External ID': 'Yes' if valid_uuid else 'No',
+            'Concept ID': concept_id,
+            'Name': concept_name,
             'URL': url,
             'Current External ID': current_ext_id,
-            'New External ID': new_external_id
+            'New External ID': new_external_id if not DRY_RUN and changed_uuid else '{}',
+            'Original Response': original_response,
+            'Update Payload': json.dumps(data) if not DRY_RUN and changed_uuid else '{}'
         })
 
+    # Get all concepts with pagination.
     def get_all_concepts(url):
-        """Get all concepts with pagination."""
         all_concepts = []
         while url:
             resp = requests.get(url, headers=HEADERS, timeout=10)
@@ -113,15 +123,11 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         response = requests.get(concept_url, headers=HEADERS, timeout=10)
         response.raise_for_status()
         concept_details = response.json()
+        concept_name = concept['display_name']
         concept_names = concept_details.get('names', [])
-
-        if is_valid_36_char_uuid(external_id):
-            COUNTERS['skipped'] += 1
-        else:
-            NEW_EXTERNAL_ID = generate_new_uuid()
-            update_concept_external_id(
-                concept_url, concept_id, NEW_EXTERNAL_ID, concept_names, external_id
-            )
+        update_concept_external_id(
+            concept_url, concept_id, concept_name, concept_names, external_id, concept_details
+        )
 
 # Print the results
 if DRY_RUN:
