@@ -1,10 +1,13 @@
+
+![](https://github.com/michaelbontyes/OCL-Concept-External-ID-Updater/actions/workflows/pylint.yml/badge.svg)
+
 # OCL Concept External ID Updater
 
 This script updates the external IDs of concepts in a given Open Concept Lab (OCL) source. It checks each concept's external ID against certain conditions and updates it if necessary. The updated external IDs are written to a CSV file.
 
 It uses the [OCL API](https://docs.openconceptlab.org/en/latest/oclapi/apireference/concepts.html#edit-concept) to pull the details of each concept in the configured OCL source, check the external ID of each concept, and update it if necessary. 
 
-[Here is an explanation video](https://www.loom.com/share/84919d2820434ae78e7be7827a607d5d?sid=b4ec5467-d560-467f-9d3a-5cbc3a324ccb)  
+[Here is an explanation/demo video](https://www.loom.com/share/84919d2820434ae78e7be7827a607d5d?sid=b4ec5467-d560-467f-9d3a-5cbc3a324ccb)  
 
 <img width="400" alt="Screenshot 2024-06-22 at 7 52 34 PM" src="https://github.com/michaelbontyes/OCL-Concept-External-ID-Updater/assets/9321036/c35a15e1-7b74-4ea3-aa79-a8ffd45f7749">
 
@@ -21,7 +24,7 @@ It uses the [OCL API](https://docs.openconceptlab.org/en/latest/oclapi/apirefere
 
 ## Installation
 
-1. Clone this repository: `git clone https://github.com/michaelbontyes/OCL_Toolbox.git`
+1. Clone this repository: `git clone https://github.com/michaelbontyes/OCL-Concept-External-ID-Updater.git`
 2. Navigate to the project directory: `cd ocl-concept-updater`
 3. Install the required libraries: `pip install requests uuid`
 
