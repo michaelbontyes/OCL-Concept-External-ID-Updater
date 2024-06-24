@@ -44,16 +44,16 @@ It uses the [OCL API](https://docs.openconceptlab.org/en/latest/oclapi/apirefere
 2. Replace "https://api.openconceptlab.org/", "your-source-id", "your-api-token", and "your-organization-id" with your actual OCL API URL, source ID, API token, and organization ID.
 3. Save the config.json file.
 
+## Dry Run / Test Mode
+To run the script in dry run mode, add the --dry-run flag when executing the script.  
+Run the script: 
+`python update_UUID.py --dry-run`
+
 ## Usage (after careful Dry Run)
 Run the script: 
 `python update_UUID.py`
 
-The script will update the external IDs of concepts in the specified OCL source and write the updated concepts to a CSV file named updated_concepts.csv and updated_concepts_dry_run.csv in Dry Run Mode.
-
-## Dry Run / Test Mode
-To run the script in dry run mode, add the --dry-run flag when executing the script:
-Run the script: 
-`python update_UUID.py --dry-run`
+The script will update the external IDs of concepts in the specified OCL source and write the updated concepts to a CSV file named `updated_concepts.csv` and `updated_concepts_dry_run.csv` in Dry Run Mode.
 
 ## CSV Files
 The script creates two CSV files:
