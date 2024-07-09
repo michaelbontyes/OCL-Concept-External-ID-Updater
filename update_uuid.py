@@ -19,6 +19,7 @@ with open('config.json', encoding='utf-8') as config_file:
 
 OCL_API_URL = config['OCL_API_URL']
 SOURCE_ID = config['SOURCE_ID']
+COLLECTION_ID = config['COLLECTION_ID']
 OCL_TOKEN = config['OCL_TOKEN']
 ORG_ID = config['ORG_ID']
 
@@ -116,7 +117,10 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         return all_concepts
 
     # Get the list of concepts in the source
-    concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/sources/{SOURCE_ID}/concepts/"
+    if not SOURCE_ID:
+        concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/collections/{COLLECTION_ID}/concepts/"
+    else:
+        concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/sources/{SOURCE_ID}/concepts/"
     concepts = get_all_concepts(concepts_url)
     TOTAL_CONCEPTS = len(concepts)
     PROCESSED_CONCEPTS_COUNT = 0
@@ -145,6 +149,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
 # Print the results
 if DRY_RUN:
     print("DRY RUN MODE: No changes will be made to the OCL source.")
+print(f"TOTAL CONCEPTS ARE {TOTAL_CONCEPTS} AND PROCESSED CONCEPTS ARE {PROCESSED_CONCEPTS_COUNT}")
 print(f"Number of concepts updated because they were empty: {COUNTERS['UPDATED_EMPTY']}")
 print(f"Number of concepts updated because they started with 'MSF-': {COUNTERS['UPDATED_MSF']}")
 print(f"Number of concepts updated because ID was <36 characters: {COUNTERS['UPDATED_INVALID']}")
