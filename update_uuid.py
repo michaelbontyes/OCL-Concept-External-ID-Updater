@@ -98,30 +98,38 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
             'Update Payload': json.dumps(data) if not DRY_RUN and changed_uuid else '{}'
         })
 
-    def get_all_concepts(url):
-        """Retrieve all concepts from the given URL."""
+    def fetch_all_concepts(url):
+        "Fetch all concepts from the API and return them as a list."
         all_concepts = []
-        while url:
-            response_concepts = requests.get(url, headers=HEADERS, timeout=10)
-            response_concepts.raise_for_status()
-            data = response_concepts.json()
-            if isinstance(data, dict):
-                all_concepts.extend(data.get('results', []))
-                url = data.get('next')
-            elif isinstance(data, list):
+        total_concepts = 0
+        page = 1
+        while True:
+            data = requests.get(f"{url}&page={page}", timeout=30)
+            if data.status_code == 200:
+                data = data.json()
+                total_concepts += len(data)
+                # If no more data is available, break the loop
+                if not data:
+                    break
+                # Add data to all_concepts list
                 all_concepts.extend(data)
-                break
+                page += 1
+                # Print progress
+                print(f"Page {page} fetched. Total concepts: {total_concepts}")
             else:
-                print("Unexpected response format:", data)
+                print(f"Error fetching page {page}: {data.status_code}")
                 break
         return all_concepts
 
     # Get the list of concepts in the source
+    LIMIT = "?q=&limit=0"
     if not SOURCE_ID:
-        concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/collections/{COLLECTION_ID}/concepts/"
+        concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/collections/{COLLECTION_ID}/concepts/{LIMIT}"
     else:
-        concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/sources/{SOURCE_ID}/concepts/"
-    concepts = get_all_concepts(concepts_url)
+        concepts_url = f"{OCL_API_URL}/orgs/{ORG_ID}/sources/{SOURCE_ID}/concepts/{LIMIT}"
+
+    # Print the total number of concepts to be processed
+    concepts = fetch_all_concepts(concepts_url)
     TOTAL_CONCEPTS = len(concepts)
     PROCESSED_CONCEPTS_COUNT = 0
 
