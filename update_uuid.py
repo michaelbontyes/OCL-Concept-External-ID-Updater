@@ -80,7 +80,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
                 "external_id": new_external_id,
                 "names": concept_names
             }
-            resp = requests.put(url, headers=HEADERS, data=json.dumps(data), timeout=10)
+            resp = requests.put(url, headers=HEADERS, data=json.dumps(data), timeout=30)
             resp.raise_for_status()
             changed_uuid = True
             valid_uuid = True
@@ -138,7 +138,7 @@ with open(CSV_FILENAME, mode='w', newline='', encoding='utf-8') as csv_file:
         concept_url = f"{OCL_API_URL}{concept['url']}"
         concept_id = concept['id']
         external_id = concept.get('external_id', '')
-        response = requests.get(concept_url, headers=HEADERS, timeout=10)
+        response = requests.get(concept_url, headers=HEADERS, timeout=30)
         response.raise_for_status()
         concept_details = response.json()
         concept_name = concept['display_name']
